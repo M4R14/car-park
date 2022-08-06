@@ -38,7 +38,11 @@ export abstract class BaseRepository<T> implements IWrite<T>, IRead<T>
         throw new Error("Method not implemented.");
     }
 
-    findOne(id: string): Promise<T> {
+    async findOne(id: string): Promise<T|null> {
         throw new Error("Method not implemented.");
+    }
+
+    async findAll(): Promise<T[]> {
+       throw new Error("Method not implemented.");
     }
 }
