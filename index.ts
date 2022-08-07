@@ -4,8 +4,8 @@ import routeWeb from './routes/web';
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT;
-const host = process.env.HOST;
+const port = Number(process.env.PORT) || 3000;
+const host = process.env.HOST || '0.0.0.0';
 
 app.use(express.json());
 

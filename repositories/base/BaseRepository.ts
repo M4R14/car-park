@@ -24,6 +24,7 @@ export abstract class BaseRepository<T> implements IWrite<T>, IRead<T>
     }
 
     async create(item: T): Promise<boolean> {
+        // duplicate item to insert in collection
         const result = await this._collection.insertOne(item);
         return result.acknowledged;
     }
