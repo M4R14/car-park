@@ -26,6 +26,19 @@ export class TicketRepository extends BaseRepository<Ticket> {
         });
     }
 
+    // find all tickets by plateNumber
+    async findAllByPlateNumber(plateNumber: string): Promise<Ticket[]> {
+        const result = await this._collection.find({ plateNumber: plateNumber }).toArray();
+        return result.map(ticket => new Ticket({
+            _id: ticket._id,
+            plateNumber: ticket.plateNumber,
+            size: ticket.size,
+            lot_id: ticket.lot_id,
+            time_start: ticket.time_start,
+            time_end: ticket.time_end,
+        }));
+    }
+
     async findById(id: Object|string): Promise<Ticket|null> {
         if (typeof id === "string") {
             id = new ObjectId(id);

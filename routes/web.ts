@@ -19,11 +19,14 @@ const router = express.Router();
 // lot routes
 router.get('/lots', lotController.index);
 router.get('/lots/:id', lotController.show);
+// update lot
+router.put('/lots/:id', lotController.update);
 router.post('/lots', lotController.create);
 router.delete('/lots/:id', lotController.delete);
 
 // ticket routes
 router.get('/tickets', ticketController.index);
+router.get('/get-all-plate-number', ticketController.getAllPlateNumber);
 
 // park the car
 router.post('/park', parkController.park);

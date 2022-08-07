@@ -52,6 +52,10 @@ export class Lot {
         this.isUsed = isUsed;
     }
 
+    getIsUsed(): boolean {
+        return this.isUsed;
+    }
+
     getSize(): Size {
         return this.size;
     }
@@ -61,7 +65,8 @@ export class Lot {
             _id: this._id,
             number: this.number,
             size: this.size,
-            isUsed: this.isUsed
+            isUsed: this.isUsed,
+            distance: this.distance
         };
     }
 }

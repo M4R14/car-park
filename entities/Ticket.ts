@@ -35,6 +35,10 @@ export class Ticket {
         return this.size;
     }
 
+    getTimeStart(): Date {
+        return this.time_start;
+    }
+
     setTimeEnd(time_end: Date): void {
         this.time_end = time_end;
     }
