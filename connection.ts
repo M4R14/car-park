@@ -17,7 +17,7 @@ class Database {
                 console.log(err);
                 return;
             }
-            console.log('Connected to mongodb');
+            // console.log('Connected to mongodb');
         });
         this.db = this.instance.db(this.databaseName);
     }

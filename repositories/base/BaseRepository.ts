@@ -18,31 +18,42 @@ export abstract class BaseRepository<T> implements IWrite<T>, IRead<T>
         this._collection = db.collection(collectionName);
     }
 
-    async create(item: T): Promise<boolean> {
-        const result = await this._collection.insertOne(item);
-
-        // after the insert operations, we returns only ok property (that haves a 1 or 0 results)
-        // and we convert to boolean result (0 false, 1 true)
+    async empty(): Promise<boolean> {
+        const result = await this._collection.deleteMany({});
         return result.acknowledged;
     }
 
-    update(id: string, item: T): Promise<boolean> {
-        throw new Error("Method not implemented.");
+    async create(item: T): Promise<boolean> {
+        const result = await this._collection.insertOne(item);
+        return result.acknowledged;
     }
 
-    delete(id: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+    async createMany(items: T[]): Promise<boolean> {
+        const result = await this._collection.insertMany(items);
+        return result.acknowledged;
     }
 
-    find(item: T): Promise<T[]> {
-        throw new Error("Method not implemented.");
+    async update(id: Object, item: T): Promise<boolean> {
+        const result = await this._collection.updateOne({_id: id}, {$set: item});
+        return result.acknowledged;        
     }
 
-    async findOne(id: string): Promise<T|null> {
+    async delete(id: Object): Promise<boolean> {
+        const result = await this._collection.deleteOne({_id: id});
+        return result.acknowledged;
+    }
+
+    async find(item: T): Promise<T[]> {
+       throw new Error("Method not implemented.");
+    }
+
+    async findOne(id: Object): Promise<T> {
         throw new Error("Method not implemented.");
     }
 
     async findAll(): Promise<T[]> {
        throw new Error("Method not implemented.");
     }
+
+    
 }
