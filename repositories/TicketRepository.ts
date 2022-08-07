@@ -2,13 +2,34 @@ import { BaseRepository } from "./base/BaseRepository";
 
 // import entities
 import { Ticket, ITicket } from "../entities/Ticket";
+import { ObjectId } from "mongodb";
 
 export class TicketRepository extends BaseRepository<Ticket> {
     countOfTickets(): Promise<number> {
         return this._collection.count({});
     }
 
-    async findById(id: Object): Promise<Ticket|null> {
+    async findByPlateNumber(plateNumber: string): Promise<Ticket|null> {
+        const result = await this._collection.findOne({ plateNumber: plateNumber });
+
+        if(!result) {
+            return null;
+        }
+
+        return new Ticket({
+            _id: result._id,
+            plateNumber: result.plateNumber,
+            size: result.size,
+            lot_id: result.lot_id,
+            time_start: result.time_start,
+            time_end: result.time_end,
+        });
+    }
+
+    async findById(id: Object|string): Promise<Ticket|null> {
+        if (typeof id === "string") {
+            id = new ObjectId(id);
+        }
         const result = await this._collection.findOne({ _id: id });
         return result ? new Ticket({
             _id: result._id,

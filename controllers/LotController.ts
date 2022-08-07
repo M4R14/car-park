@@ -95,6 +95,13 @@ class LotController {
     async show(req: Request, res: Response, next: NextFunction) {
         const lot_id = new ObjectId(req.params.id);
         const lot = await this.lotRepository.findById(lot_id);
+
+        if (!lot) {
+            res.status(404).json({
+                message: 'Lot not found'
+            });
+        }
+
         res.json(lot);
     }
 
@@ -123,5 +130,4 @@ class LotController {
     }
 }
 
-const lotRepository = new LotRepository(connection.getDatabase(), 'lots');
-export default new LotController(lotRepository);
+export default LotController;
