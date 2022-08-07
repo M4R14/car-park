@@ -10,7 +10,9 @@ class Database {
 
     private db: Db;
 
-    constructor() {
+    constructor(url:string, databaseName:string) {
+        this.url = url;
+        this.databaseName = databaseName;
         this.instance = new MongoClient(this.url);
         this.instance.connect((err: any) => {
             if (err) {
@@ -45,4 +47,9 @@ class Database {
     }
 }
 
-export default new Database();
+import dotenv from 'dotenv';
+dotenv.config();
+const DB_URL = process.env.DB_URL || 'mongodb://localhost:27017';
+const DB_NAME = process.env.DB_NAME || 'warriors';
+const database = new Database(DB_URL, DB_NAME);
+export default database;
