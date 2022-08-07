@@ -1,28 +1,23 @@
-import ParkService from './../services/ParkService';
-import { LotRepository } from './../repositories/LotRepository';
-import { TicketRepository } from './../repositories/TicketRepository';
+import {
+  lotRepository,
+  ticketRepository,
+  parkService
+} from './test__database';
+
+import { ObjectId } from 'mongodb';
 
 import { Size } from '../enums/Size';
 import { Lot } from './../entities/Lot';
 
-import connection from '../connection';
-
-const lotRepository = new LotRepository(connection.getDatabase(), 'test__lots');
-const ticketRepository = new TicketRepository(connection.getDatabase(), 'test__tickets');
-
-const parkService = new ParkService(
-  lotRepository, 
-  ticketRepository
-); 
+const lot_data_set = () =>  [
+  new Lot({ number: 1, size: Size.Small, distance: 5 }),
+  new Lot({ number: 2, size: Size.Medium, distance: 10 }),
+  new Lot({ number: 3, size: Size.Large, distance: 30 }),
+];
 
 describe('test ParkService', () => {
   test('Park car', async () => {
-    const lots = [
-      new Lot({ number: 1, size: Size.Small, distance: 5 }),
-      new Lot({ number: 2, size: Size.Medium, distance: 10 }),
-      new Lot({ number: 3, size: Size.Large, distance: 30 }),
-    ];
-
+    const lots = lot_data_set();
     await lotRepository.createMany(lots);
 
     const ticket = await parkService.park({
@@ -53,18 +48,15 @@ describe('test ParkService', () => {
   });
 
   test('Leave car', async  () => {
-    await lotRepository.createMany([
-      new Lot({ number: 1, size: Size.Small, distance: 5 }),
-      new Lot({ number: 2, size: Size.Medium, distance: 10 }),
-      new Lot({ number: 3, size: Size.Large, distance: 30 }),
-    ]);
+    const lots =  lot_data_set();
+    await lotRepository.createMany(lots);
 
     const ticket = await parkService.park({
       plateNumber: 'AA-AA-AA',
       size: Size.Small,
     });
 
-    await parkService.leave(ticket);
+    await parkService.leave(ticket.getId().toString());
 
     // find lot by id
     const lotFound = await lotRepository.findById(ticket.getLotId());
@@ -73,6 +65,104 @@ describe('test ParkService', () => {
 
     await lotRepository.empty();
     await ticketRepository.empty();
+  });
+
+
+  //  get registration allocated slot number list by car size 
+  test('get registration allocated slot number list by car size', async () => {
+    await lotRepository.createMany([
+      new Lot({ number: 1, size: Size.Small, distance: 5 }),
+      new Lot({ number: 2, size: Size.Medium, distance: 10 }),
+      new Lot({ number: 3, size: Size.Large, distance: 30 }),
+      new Lot({ number: 4, size: Size.Large, distance: 32 }),
+      new Lot({ number: 5, size: Size.Large, distance: 33 }),
+      new Lot({ number: 6, size: Size.Large, distance: 34 }),
+    ]);
+
+    parkService.park({
+      plateNumber: 'AA-AA-AA',
+      size: Size.Small,
+    });
+
+    parkService.park({
+      plateNumber: 'BB-BB-BB',
+      size: Size.Medium,
+    });
+
+    parkService.park({
+      plateNumber: 'CC-CC-CC',
+      size: Size.Large,
+    });
+
+    parkService.park({
+      plateNumber: 'DD-DD-DD',
+      size: Size.Large,
+    });
+
+    const tickets = await (await ticketRepository.findAll())
+      .filter(ticket => ticket.getSize() == Size.Large);
+
+    const lot_ids: ObjectId[]  = tickets.map(ticket => ticket.getId());
+
+    console.log(lot_ids);
+
+    // get lot by lot_ids
+    const lots = await lotRepository.findByIds(lot_ids);
+
+    console.log(lots);
+    
+    expect(lots.length).toBe(2);
+    expect(lots.map(lot => lot.getSize())).toBe([
+      Size.Large,
+      Size.Large,
+    ]);
+
+    await lotRepository.empty();
+    await ticketRepository.empty();
+  }),
+
+  // get registration plate number list by car size 
+  test('get registration plate number list by car size', async () => {
+    await lotRepository.createMany([
+      new Lot({ number: 1, size: Size.Small, distance: 5 }),
+      new Lot({ number: 2, size: Size.Medium, distance: 10 }),
+      new Lot({ number: 3, size: Size.Large, distance: 30 }),
+      new Lot({ number: 4, size: Size.Large, distance: 32 }),
+      new Lot({ number: 5, size: Size.Large, distance: 33 }),
+      new Lot({ number: 6, size: Size.Large, distance: 34 }),
+    ]);
+
+    parkService.park({
+      plateNumber: 'AA-AA-AA',
+      size: Size.Small,
+    });
+
+    parkService.park({
+      plateNumber: 'BB-BB-BB',
+      size: Size.Medium,
+    });
+
+    parkService.park({
+      plateNumber: 'CC-CC-CC',
+      size: Size.Large,
+    });
+
+    parkService.park({
+      plateNumber: 'DD-DD-DD',
+      size: Size.Large,
+    });
+
+    const tickets = await ticketRepository.findAll()
+    const tickets_by_car_size =  tickets.filter(ticket => ticket.getSize() == Size.Large);
+    const plateNumbers = tickets_by_car_size.map(ticket => ticket.getPlateNumber());
+    
+    expect(plateNumbers).toBe([
+      'CC-CC-CC',
+      'DD-DD-DD',
+    ]);
+
+    await ticketRepository.empty();
+    await lotRepository.empty();
   });
 
 } );

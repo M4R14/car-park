@@ -33,4 +33,7 @@ router.post('/park', parkController.park);
 // leave the slot
 router.post('/leave/:id', parkController.leave);
 
+// getAllAllocatedSlots
+router.get('/get-allocated-slots', parkController.getAllAllocatedSlots);
+
 export default router;

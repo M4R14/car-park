@@ -28,8 +28,7 @@ const validate_park = (data: any) => {
     return true;
 }
 
-class ParkController
-{
+class ParkController {
     private parkService: ParkService;
 
     constructor(parkService: ParkService) {
@@ -37,18 +36,36 @@ class ParkController
 
         this.park = this.park.bind(this);
         this.leave = this.leave.bind(this);
+        this.getAllAllocatedSlots = this.getAllAllocatedSlots.bind(this);
     }
 
-    async park(req: Request, res: Response, next: NextFunction) : Promise<void> {
+    // get registration allocated slot number list by car size 
+    async getAllAllocatedSlots(req: Request, res: Response, next: NextFunction) {
+        const size: number = Number(req.query.size);
+
+        console.log(size, req.query.size);
+
+        if (!(size in Size)) {
+            res.status(400).json({
+                message: 'Invalid size'
+            });
+            return;
+        }
+
+        const result: number[] = await this.parkService.getSlotNumberList(size);
+        res.json(result);
+    }
+
+    async park(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const car : {
+            const car: {
                 plateNumber: string,
                 size: number
             } = req.body;
 
             validate_park(car);
 
-            const ticket : Ticket  = await this.parkService.park(car);
+            const ticket: Ticket = await this.parkService.park(car);
             res.json(ticket);
         } catch (error) {
             if (error instanceof Error) {
@@ -62,8 +79,8 @@ class ParkController
     // leave the slot
     async leave(req: Request, res: Response, next: NextFunction) {
         try {
-            const ticket_id : string = req.params.id;
-            const result : String = await this.parkService.leave(ticket_id);
+            const ticket_id: string = req.params.id;
+            const result: String = await this.parkService.leave(ticket_id);
             res.json(result);
         } catch (error) {
             if (error instanceof Error) {
