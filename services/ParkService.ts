@@ -46,8 +46,6 @@ class ParkService
 
         const lot = freeLots.reduce((prev:Lot, curr:Lot) => prev.getDistance() < curr.getDistance() ? prev : curr);
 
-        console.log(lot);
-
         if (!lot) {
             throw new Error('Lot not found');
         }

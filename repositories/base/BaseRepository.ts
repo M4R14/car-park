@@ -18,6 +18,12 @@ export abstract class BaseRepository<T> implements IWrite<T>, IRead<T>
         this._collection = db.collection(collectionName);
     }
 
+    // count
+    async count(): Promise<number> {
+        const result = await this._collection.countDocuments();
+        return result;
+    }
+
     async empty(): Promise<boolean> {
         const result = await this._collection.deleteMany({});
         return result.acknowledged;

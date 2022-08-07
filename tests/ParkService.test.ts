@@ -17,22 +17,28 @@ const lot_data_set = () =>  [
 
 describe('test ParkService', () => {
   test('Park car', async () => {
+
+    const total_lots = await lotRepository.count();
+
     const lots = lot_data_set();
     await lotRepository.createMany(lots);
 
+    // random plate number
+    const plate_number = Math.random().toString(36).substring(7);
+
     const ticket = await parkService.park({
-      plateNumber: 'AA-AA-AA',
+      plateNumber: plate_number,
       size: Size.Small,
     })
 
     // get free lot
     const free_lot_less_then_total_lot = (await lotRepository.findAll())
       .filter(lot => lot.isFree())
-      .length < lots.length;
+      .length < total_lots;
 
     expect(free_lot_less_then_total_lot).toBe(true);
     
-    expect(ticket.getPlateNumber()).toBe('AA-AA-AA');
+    expect(ticket.getPlateNumber()).toBe(plate_number);
     expect(ticket.getSize()).toBe(Size.Small);
 
     const lotFromDb = await lotRepository.findById(ticket.getLotId());
@@ -79,24 +85,30 @@ describe('test ParkService', () => {
       new Lot({ number: 6, size: Size.Large, distance: 34 }),
     ]);
 
-    parkService.park({
-      plateNumber: 'AA-AA-AA',
-      size: Size.Small,
-    });
+    // random plate number
+    const r_plate_number = () => Math.random().toString(36).substring(7);
 
-    parkService.park({
-      plateNumber: 'BB-BB-BB',
-      size: Size.Medium,
-    });
+    const cars = [
+      {
+        plateNumber: r_plate_number(),
+        size: Size.Small,
+      },
+      {
+        plateNumber: r_plate_number(),
+        size: Size.Medium,
+      },
+      {
+        plateNumber: r_plate_number(),
+        size: Size.Large,
+      },
+      {
+        plateNumber: r_plate_number(),
+        size: Size.Large,
+      }
+    ];
 
-    parkService.park({
-      plateNumber: 'CC-CC-CC',
-      size: Size.Large,
-    });
-
-    parkService.park({
-      plateNumber: 'DD-DD-DD',
-      size: Size.Large,
+    cars.forEach(async car => {
+      await parkService.park(car);
     });
 
     const tickets = await (await ticketRepository.findAll())
