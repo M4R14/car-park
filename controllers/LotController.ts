@@ -39,11 +39,33 @@ class LotController {
         this.create = this.create.bind(this);
         this.delete = this.delete.bind(this);
         this.show = this.show.bind(this);
+        this.update = this.update.bind(this);
     }
 
     // index list of lots
     async index(req: Request, res: Response, next: NextFunction) {
-        const lots = await this.lotRepository.findAll();
+        let lots = await this.lotRepository.findAll();
+
+        // if params has car size, filter lots by size
+        if (req.query.size) {
+            const size = Number(req.query.size);
+
+            // size in Size enum
+            if (size in Size) {
+                lots = lots.filter(lot => Size[lot.getSize()] === Size[size]);
+            }
+        }
+
+        // if params has isUsed, filter lots by isUsed
+        if (req.query.isUsed) {
+            const isUsed = Boolean(req.query.isUsed);
+
+            lots = lots.filter(lot => lot.getIsUsed() == isUsed);
+        }
+
+        // order lots by distance ascending
+        lots = lots.sort((a, b) => a.getDistance() - b.getDistance());
+
         res.json(lots);
     }
 
@@ -88,6 +110,37 @@ class LotController {
 
         res.json({
             message: 'Lot created'
+        });
+    }
+
+    // update lot
+    async update(req: Request, res: Response, next: NextFunction) {
+        const lot_id = new ObjectId(req.params.id);
+
+        const lot : Lot|null = await this.lotRepository.findById(lot_id);
+
+        if (lot == null) {
+            res.status(500).json({
+                message: 'Lot not found'
+            });
+            return;
+        }
+
+        const lot_will_update = {
+            ...lot.toObject(),
+            ...req.body
+        };
+
+        const result = await this.lotRepository.update(lot_id, lot_will_update);
+        
+        if (!result) {
+            res.status(500).json({
+                message: 'Error updating lot'
+            });
+        }
+
+        res.json({
+            message: 'Lot updated'
         });
     }
 
